@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @db.VarChar(100)
+  email    String @unique @db.VarChar(150)
+  password String @db.VarChar(100)
+
+  todos Todo[] // Relasi ke model Todo, todos adalah nama variabel
+  // [] menandakan relasi one-to-many
+
+  @@map("users")
+}
+
+model Todo { // akan punya relasi one-to-many dengan User
+  id          Int    @id @default(autoincrement())
+  title       String @db.VarChar(100)
+  description String @db.Text
+  priority    String @db.VarChar(10)
+  due_date    String @db.VarChar(100)
+  status      String @db.VarChar(20)
+
+  user_id Int // foreign key
+
+  // menandakan model Todo hanya bisa dimiliki oleh satu User (krn tdk ada array [] nya)
+  // Cascade: otomatis kalau User dihapus, Todo yg berelasi jg dihapus
+  // Kalau many-to-many tinggal buat model pivot/junction table
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("todos")
+}
